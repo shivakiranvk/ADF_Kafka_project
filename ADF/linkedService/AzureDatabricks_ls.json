@@ -1,0 +1,17 @@
+{
+	"name": "AzureDatabricks_ls",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-1984876007951133.13.azuredatabricks.net",
+			"authentication": "MSI",
+			"workspaceResourceId": "/subscriptions/824dbdb8-14f9-40c8-ba19-ad0c948aa495/resourceGroups/adf_scenarios/providers/Microsoft.Databricks/workspaces/kakfaprojectdatabricks",
+			"existingClusterId": "1226-035632-9a86mmct"
+		},
+		"connectVia": {
+			"referenceName": "SHIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
