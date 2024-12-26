@@ -54,7 +54,8 @@
 								"type": "Expression"
 							}
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -97,7 +98,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('fetch_metadata').output.value",
+						"value": "@activity('check_DB_tbl').output.value",
 						"type": "Expression"
 					},
 					"isSequential": false,
@@ -157,7 +158,7 @@
 											"type": "Expression"
 										},
 										"ds_db_name": {
-											"value": "@activity('check_DB_tbl').output.firstRow.source_db_name",
+											"value": "@activity('fetch_metadata').output.firstRow.source_db_name",
 											"type": "Expression"
 										},
 										"ds_user_name": {
