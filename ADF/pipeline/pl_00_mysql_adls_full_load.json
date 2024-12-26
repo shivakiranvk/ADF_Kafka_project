@@ -185,11 +185,11 @@
 											"type": "Expression"
 										},
 										"ds_folder": {
-											"value": "mysql",
+											"value": "@activity('fetch_metadata').output.firstRow.source_name",
 											"type": "Expression"
 										},
 										"ds_file": {
-											"value": "@item().Table_name",
+											"value": "@concat(item().database_name,'_',item().Table_name,'.csv')",
 											"type": "Expression"
 										}
 									}
