@@ -1,0 +1,51 @@
+{
+	"name": "MySqlTable_ds",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_MySql",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"host_name": {
+					"value": "@dataset().ds_host_name",
+					"type": "Expression"
+				},
+				"port": {
+					"value": "@dataset().ds_port",
+					"type": "Expression"
+				},
+				"db_name": {
+					"value": "@dataset().ds_db_name",
+					"type": "Expression"
+				},
+				"user_name": {
+					"value": "@dataset().ds_user_name",
+					"type": "Expression"
+				},
+				"secret_name": {
+					"value": "@dataset().ds_secret_name",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"ds_host_name": {
+				"type": "string"
+			},
+			"ds_port": {
+				"type": "string"
+			},
+			"ds_db_name": {
+				"type": "string"
+			},
+			"ds_user_name": {
+				"type": "string"
+			},
+			"ds_secret_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "MySqlTable",
+		"schema": []
+	}
+}
