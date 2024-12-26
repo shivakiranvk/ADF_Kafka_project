@@ -1,0 +1,214 @@
+{
+	"name": "pl_00_mysql_adls_full_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "check_DB_tbl",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "fetch_metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "MySqlSource",
+						"query": {
+							"value": "@concat('SELECT \n\tTABLE_SCHEMA AS database_name,\n    TABLE_NAME as Table_name\nfrom\ninformation_schema.tables\nwhere \nTABLE_TYPE = \"BASE TABLE\" AND TABLE_SCHEMA = \"',activity('fetch_metadata').output.firstRow.source_db_name,'\"')",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "MySqlTable_ds",
+						"type": "DatasetReference",
+						"parameters": {
+							"ds_host_name": {
+								"value": "@activity('fetch_metadata').output.firstRow.host_name",
+								"type": "Expression"
+							},
+							"ds_port": {
+								"value": "@activity('fetch_metadata').output.firstRow.port",
+								"type": "Expression"
+							},
+							"ds_db_name": {
+								"value": "@activity('fetch_metadata').output.firstRow.source_db_name",
+								"type": "Expression"
+							},
+							"ds_user_name": {
+								"value": "@activity('fetch_metadata').output.firstRow.source_user_name",
+								"type": "Expression"
+							},
+							"ds_secret_name": {
+								"value": "@activity('fetch_metadata').output.firstRow.secret_name",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "fetch_metadata",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureDatabricksDeltaLakeSource",
+						"query": {
+							"value": "@concat('select * from metadata_schema.parameters_tbl where job_id = \"',pipeline().parameters.job_id,'\"')",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_delta",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "copy all table",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "check_DB_tbl",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('fetch_metadata').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "copy data",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "MySqlSource",
+									"query": {
+										"value": "@concat('select * from ',item().database_name, '.', item().Table_name)",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "MySqlTable_ds",
+									"type": "DatasetReference",
+									"parameters": {
+										"ds_host_name": {
+											"value": "@activity('fetch_metadata').output.firstRow.host_name",
+											"type": "Expression"
+										},
+										"ds_port": {
+											"value": "@activity('fetch_metadata').output.firstRow.port",
+											"type": "Expression"
+										},
+										"ds_db_name": {
+											"value": "@activity('check_DB_tbl').output.firstRow.source_db_name",
+											"type": "Expression"
+										},
+										"ds_user_name": {
+											"value": "@activity('fetch_metadata').output.firstRow.source_user_name",
+											"type": "Expression"
+										},
+										"ds_secret_name": {
+											"value": "@activity('fetch_metadata').output.firstRow.secret_name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_adls_csv",
+									"type": "DatasetReference",
+									"parameters": {
+										"ds_adls_url": {
+											"value": "@activity('fetch_metadata').output.firstRow.adls_url",
+											"type": "Expression"
+										},
+										"ds_containar_name": {
+											"value": "@activity('fetch_metadata').output.firstRow.adls_container_name",
+											"type": "Expression"
+										},
+										"ds_folder": {
+											"value": "mysql",
+											"type": "Expression"
+										},
+										"ds_file": {
+											"value": "@item().Table_name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"job_id": {
+				"type": "string",
+				"defaultValue": "222"
+			}
+		},
+		"folder": {
+			"name": "Kakfa_project"
+		},
+		"annotations": []
+	}
+}
