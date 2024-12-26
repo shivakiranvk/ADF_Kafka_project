@@ -1,10 +1,15 @@
 {
 	"name": "ls_adls",
 	"properties": {
+		"parameters": {
+			"adls_url": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://adlsstoragedev21.dfs.core.windows.net/"
+			"url": "@{linkedService().adls_url}"
 		}
 	}
 }
